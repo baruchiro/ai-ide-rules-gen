@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "This repository automates extracting **ESLint rules** and **Repomix insights**, generating a structured **LLM prompt** to improve **coding standards**.",
   "main": "generate-rules.js",
+  "bin": {
+    "eslint-ai-rules": "generate-rules.js"
+  },
   "scripts": {
     "run": "node generate-rules.js"
   },
