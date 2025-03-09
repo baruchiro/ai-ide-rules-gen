@@ -29,21 +29,50 @@ if (fs.existsSync(repomixFilePath)) {
   console.log("⚠️ Repomix output not found. Proceeding without it.");
 }
 
-// --- 3️⃣ Load ESLint Config (Supports JSON, YAML, YML) ---
+// --- 3️⃣ Load ESLint Config (Supports all ESLint config formats in priority order) ---
 logStep("Step 3: Extracting ESLint rules");
 let eslintConfig = {};
-const eslintJsonPath = path.resolve(__dirname, ".eslintrc.json");
-const eslintYamlPath = path.resolve(__dirname, ".eslintrc.yaml");
-const eslintYmlPath = path.resolve(__dirname, ".eslintrc.yml");
 
-if (fs.existsSync(eslintJsonPath)) {
-  eslintConfig = JSON.parse(fs.readFileSync(eslintJsonPath, "utf-8"));
-} else if (fs.existsSync(eslintYamlPath)) {
-  eslintConfig = yaml.load(fs.readFileSync(eslintYamlPath, "utf-8"));
-} else if (fs.existsSync(eslintYmlPath)) {
-  eslintConfig = yaml.load(fs.readFileSync(eslintYmlPath, "utf-8"));
-} else {
-  console.error("❌ ESLint config not found! Ensure `.eslintrc.json`, `.eslintrc.yaml`, or `.eslintrc.yml` exists.");
+// Define config files in priority order
+const configFiles = [
+  { path: path.resolve(__dirname, ".eslintrc.js"), loader: (p) => require(p) },
+  { path: path.resolve(__dirname, ".eslintrc.cjs"), loader: (p) => require(p) },
+  { path: path.resolve(__dirname, ".eslintrc.yaml"), loader: (p) => yaml.load(fs.readFileSync(p, "utf-8")) },
+  { path: path.resolve(__dirname, ".eslintrc.yml"), loader: (p) => yaml.load(fs.readFileSync(p, "utf-8")) },
+  { path: path.resolve(__dirname, ".eslintrc.json"), loader: (p) => JSON.parse(fs.readFileSync(p, "utf-8")) },
+  {
+    path: path.resolve(__dirname, "package.json"),
+    loader: (p) => {
+      const pkg = JSON.parse(fs.readFileSync(p, "utf-8"));
+      if (!pkg.eslintConfig) throw new Error("No eslintConfig in package.json");
+      return pkg.eslintConfig;
+    }
+  }
+];
+
+// Try loading configs in priority order
+let configLoaded = false;
+for (const config of configFiles) {
+  if (fs.existsSync(config.path)) {
+    try {
+      eslintConfig = config.loader(config.path);
+      console.log(`✅ ESLint config loaded from ${path.basename(config.path)}`);
+      configLoaded = true;
+      break;
+    } catch (error) {
+      console.log(`⚠️ Failed to load config from ${path.basename(config.path)}: ${error.message}`);
+    }
+  }
+}
+
+if (!configLoaded) {
+  console.error("❌ No valid ESLint config found! Ensure one of these exists and is valid:");
+  console.error("   - .eslintrc.js");
+  console.error("   - .eslintrc.cjs");
+  console.error("   - .eslintrc.yaml");
+  console.error("   - .eslintrc.yml");
+  console.error("   - .eslintrc.json");
+  console.error("   - eslintConfig in package.json");
   process.exit(1);
 }
 
