@@ -11,7 +11,7 @@ function logStep(step) {
 logStep("Step 1: Running Repomix to analyze the codebase");
 try {
   const repomixOutputPath = "repomix-output.txt";
-  require("child_process").execSync(`repomix analyze --output ${repomixOutputPath}`, { stdio: "inherit" });
+  require("child_process").execSync(`repomix --output ${repomixOutputPath}`, { stdio: "inherit" });
   console.log("✅ Repomix analysis complete.");
 } catch (error) {
   console.error("❌ Repomix failed. Proceeding without its output.");
@@ -23,8 +23,10 @@ const repomixFilePath = path.resolve(__dirname, "repomix-output.txt");
 let repomixData = "No repomix data found.";
 
 if (fs.existsSync(repomixFilePath)) {
-  repomixData = fs.readFileSync(repomixFilePath, "utf-8");
-  console.log("✅ Repomix output loaded.");
+  const fullRepomixData = fs.readFileSync(repomixFilePath, "utf-8");
+  // Split at the Files section and take everything before it
+  repomixData = fullRepomixData.split("================================================================\nFiles\n================================================================")[0];
+  console.log("✅ Repomix output loaded and split.");
 } else {
   console.log("⚠️ Repomix output not found. Proceeding without it.");
 }
@@ -105,7 +107,7 @@ ${formattedEslintRules}
 
 ## **Repomix Insights (if available)**
 \`\`\`
-${repomixData.substring(0, 2000)}
+${repomixData}
 \`\`\`
 
 ## **Your Task**
