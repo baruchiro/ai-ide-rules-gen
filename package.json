@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/royisch/ai-ide-rules-gen#readme",
   "dependencies": {
-    "yaml": "^2.7.0"
+    "yaml": "^2.7.0",
+    "repomix": "^0.2.35"
   }
 }

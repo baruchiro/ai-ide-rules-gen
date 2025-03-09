@@ -9,7 +9,13 @@ This repository automates extracting **ESLint rules** and **Repomix insights**, 
 4. **Allows manual review & AI-enhanced rules creation**
 
 ## 🚀 Usage
-### 1️⃣ **Run the Script**
+
+### 1️⃣ **Install Repomix**
+```bash
+npm install -g repomix
+```
+
+### 2️⃣ **Run the Script**
 ```bash
 node generate-rules.js
-
+```
